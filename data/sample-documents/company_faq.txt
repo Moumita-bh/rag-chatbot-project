@@ -1,0 +1,11 @@
+Q: What is the company's refund policy?
+A: We offer a 30-day money-back guarantee on all purchases. If you are not satisfied with our product, contact support within 30 days.
+
+Q: How can I contact support?
+A: You can contact our support team via email at support@example.com or through the live chat on our website.
+
+Q: Do you offer any discounts?
+A: Yes, we offer student, non-profit, and bulk purchase discounts. Please reach out to sales@example.com for more details.
+
+Q: Is your platform secure?
+A: Yes, our platform uses industry-standard encryption, multi-factor authentication, and regular security audits.

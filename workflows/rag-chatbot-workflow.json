@@ -1,0 +1,128 @@
+{
+  "nodes": [
+    {
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ask"
+      },
+      "typeVersion": 1
+    },
+    {
+      "name": "Validate Question",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "const q = $json['question']?.trim(); if (!q || q.length < 5) throw new Error('Invalid'); return [{ json: { question: q } }];"
+      },
+      "position": [200, 200]
+    },
+    {
+      "name": "Get Embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.openai.com/v1/embeddings",
+        "method": "POST",
+        "bodyJson": {
+          "model": "text-embedding-3-small",
+          "input": "{{ $node['Validate Question'].json.question }}"
+        },
+        "options": {
+          "headers": {
+            "Authorization": "Bearer {{ $env.OPENAI_API_KEY }}"
+          }
+        }
+      }
+    },
+    {
+      "name": "Vector Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "http://localhost:8000/query",
+        "method": "POST",
+        "body": {
+          "topK": 5,
+          "query_embeddings": [
+            "{{ $node['Get Embedding'].json.data[0].embedding }}"
+          ]
+        },
+        "options": {
+          "bodyContentType": "json"
+        }
+      }
+    },
+    {
+      "name": "Compose Prompt",
+      "type": "n8n-nodes-base.function",
+      "parameters": {
+        "functionCode": "const utils = require('/data/scripts/utils.js'); const hits = $node['Vector Search'].json.result.sort((a,b)=>b.score-a.score).slice(0,5); const chunks = hits.map(h=>h.metadata.text); const scores = hits.map(h=>h.score); const prompt = utils.buildPrompt(chunks, scores, $node['Validate Question'].json.question); return [{ json: { prompt } }];"
+      }
+    },
+    {
+      "name": "Generate Answer",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "method": "POST",
+        "bodyJson": {
+          "model": "gpt-3.5-turbo",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are a helpful assistant."
+            },
+            {
+              "role": "user",
+              "content": "{{ $node['Compose Prompt'].json.prompt }}"
+            }
+          ],
+          "temperature": 0.0
+        },
+        "options": {
+          "headers": {
+            "Authorization": "Bearer {{ $env.OPENAI_API_KEY }}"
+          }
+        }
+      }
+    },
+    {
+      "name": "Reply to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "parameters": {
+        "responseBody": "{{ $node['Generate Answer'].json.choices[0].message.content }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": [
+      {
+        "node": "Validate Question"
+      }
+    ],
+    "Validate Question": [
+      {
+        "node": "Get Embedding"
+      }
+    ],
+    "Get Embedding": [
+      {
+        "node": "Vector Search"
+      }
+    ],
+    "Vector Search": [
+      {
+        "node": "Compose Prompt"
+      }
+    ],
+    "Compose Prompt": [
+      {
+        "node": "Generate Answer"
+      }
+    ],
+    "Generate Answer": [
+      {
+        "node": "Reply to Webhook"
+      }
+    ]
+  }
+}

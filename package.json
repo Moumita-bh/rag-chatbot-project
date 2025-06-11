@@ -1,0 +1,35 @@
+{
+  "name": "rag-chatbot-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Moumita-bh/rag-chatbot-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Moumita-bh/rag-chatbot-project/issues"
+  },
+  "homepage": "https://github.com/Moumita-bh/rag-chatbot-project#readme",
+  "dependencies": {
+    "@dqbd/tiktoken": "^1.0.21",
+    "axios": "^1.9.0",
+    "chromadb": "^3.0.3",
+    "dotenv": "^16.5.0",
+    "fs": "^0.0.1-security",
+    "glob": "^11.0.2",
+    "openai": "^5.3.0",
+    "path": "^0.12.7",
+    "pdf-parse": "^1.1.1"
+  }
+}
